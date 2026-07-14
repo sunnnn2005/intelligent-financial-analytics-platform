@@ -44,6 +44,21 @@ def test_seed_and_dashboard_summary():
     assert summary["top_category"] is not None
 
 
+def test_mock_plaid_sync_reports_created_and_skipped_transactions():
+    client = build_client()
+
+    first_sync = client.post("/plaid/sync/mock")
+    second_sync = client.post("/plaid/sync/mock")
+
+    assert first_sync.status_code == 200
+    assert first_sync.json()["created_count"] >= 1
+    assert first_sync.json()["skipped_count"] == 0
+
+    assert second_sync.status_code == 200
+    assert second_sync.json()["created_count"] == 0
+    assert second_sync.json()["skipped_count"] >= 1
+
+
 def test_duplicate_transaction_returns_conflict():
     client = build_client()
     payload = {

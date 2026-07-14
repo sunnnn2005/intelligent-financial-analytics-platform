@@ -43,6 +43,12 @@ class DashboardSummary(BaseModel):
     anomaly_count: int
 
 
+class SyncSummary(BaseModel):
+    source: str
+    created_count: int
+    skipped_count: int
+
+
 class AnomalyOut(BaseModel):
     id: int
     merchant_name: str

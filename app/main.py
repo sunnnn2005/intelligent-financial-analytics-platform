@@ -19,6 +19,7 @@ from app.schemas import (
     DashboardSummary,
     MerchantSummary,
     MonthlySummary,
+    SyncSummary,
     TransactionCreate,
     TransactionOut,
 )
@@ -49,9 +50,9 @@ def create_transaction(payload: TransactionCreate, db: Session = Depends(get_db)
     return transaction
 
 
-@app.post("/seed", response_model=list[TransactionOut])
-def seed_transactions(db: Session = Depends(get_db)):
+def sync_mock_plaid_transactions(db: Session):
     created = []
+    skipped_count = 0
     for item in MOCK_TRANSACTIONS:
         exists = (
             db.query(Transaction)
@@ -59,6 +60,7 @@ def seed_transactions(db: Session = Depends(get_db)):
             .first()
         )
         if exists:
+            skipped_count += 1
             continue
 
         transaction = Transaction(**item)
@@ -68,6 +70,23 @@ def seed_transactions(db: Session = Depends(get_db)):
     db.commit()
     for transaction in created:
         db.refresh(transaction)
+
+    return created, skipped_count
+
+
+@app.post("/plaid/sync/mock", response_model=SyncSummary)
+def plaid_mock_sync(db: Session = Depends(get_db)):
+    created, skipped_count = sync_mock_plaid_transactions(db)
+    return {
+        "source": "plaid-sandbox-mock",
+        "created_count": len(created),
+        "skipped_count": skipped_count,
+    }
+
+
+@app.post("/seed", response_model=list[TransactionOut])
+def seed_transactions(db: Session = Depends(get_db)):
+    created, _ = sync_mock_plaid_transactions(db)
     return created
 
 

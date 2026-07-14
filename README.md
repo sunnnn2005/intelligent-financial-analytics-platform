@@ -22,7 +22,7 @@ and product analytics.
 ## MVP Features
 
 - Transaction ingestion endpoint
-- Seed endpoint for mock Plaid-style transactions
+- Mock Plaid sync endpoint for sandbox-style transactions
 - Category, merchant, and monthly spending summaries
 - Simple anomaly detection for unusually large transactions
 - Dashboard summary endpoint for frontend-ready metrics
@@ -71,6 +71,7 @@ python -m pytest
 ## API Endpoints
 
 - `POST /transactions` creates a transaction
+- `POST /plaid/sync/mock` syncs Plaid Sandbox-inspired mock transactions
 - `POST /seed` loads Plaid Sandbox-inspired mock transactions
 - `GET /transactions` lists transactions
 - `GET /analytics/category-summary` groups spend by category
@@ -85,10 +86,19 @@ The data stack is pinned for Python 3.12 because pandas and NumPy wheels are
 more reliable there than on bleeding-edge Python versions. If your default
 `python3` is newer, create the virtual environment with a Python 3.12 binary.
 
+The default local database is SQLite. To run with PostgreSQL:
+
+```bash
+docker compose up --build
+curl -X POST http://localhost:8000/plaid/sync/mock
+```
+
+The Docker Compose setup uses a local Postgres container and does not require
+paid Plaid credentials.
+
 ## Project Roadmap
 
 - Replace mock data with Plaid Sandbox integration
-- Add PostgreSQL Docker Compose setup
 - Add user authentication
 - Add recurring subscription detection
 - Add React dashboard
