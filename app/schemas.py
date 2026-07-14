@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class TransactionCreate(BaseModel):
@@ -14,14 +14,33 @@ class TransactionCreate(BaseModel):
 class TransactionOut(TransactionCreate):
     id: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CategorySummary(BaseModel):
     category: str
     total_spend: float
     transaction_count: int
+
+
+class MerchantSummary(BaseModel):
+    merchant_name: str
+    total_spend: float
+    transaction_count: int
+
+
+class MonthlySummary(BaseModel):
+    month: str
+    total_spend: float
+    transaction_count: int
+
+
+class DashboardSummary(BaseModel):
+    total_spend: float
+    transaction_count: int
+    top_category: str | None
+    top_merchant: str | None
+    anomaly_count: int
 
 
 class AnomalyOut(BaseModel):

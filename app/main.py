@@ -1,11 +1,27 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.analytics import detect_anomalies, summarize_by_category
+from app.analytics import (
+    build_dashboard_summary,
+    detect_anomalies,
+    summarize_by_category,
+    summarize_by_merchant,
+    summarize_by_month,
+)
 from app.database import Base, engine, get_db
+from app.dashboard import render_dashboard
 from app.models import Transaction
-from app.schemas import AnomalyOut, CategorySummary, TransactionCreate, TransactionOut
+from app.schemas import (
+    AnomalyOut,
+    CategorySummary,
+    DashboardSummary,
+    MerchantSummary,
+    MonthlySummary,
+    TransactionCreate,
+    TransactionOut,
+)
 from app.seed_data import MOCK_TRANSACTIONS
 
 Base.metadata.create_all(bind=engine)
@@ -60,21 +76,8 @@ def list_transactions(db: Session = Depends(get_db)):
     return db.query(Transaction).order_by(Transaction.transaction_date.desc()).all()
 
 
-@app.get("/analytics/category-summary", response_model=list[CategorySummary])
-def category_summary(db: Session = Depends(get_db)):
-    rows = [
-        {
-            "category": transaction.category,
-            "amount": transaction.amount,
-        }
-        for transaction in db.query(Transaction).all()
-    ]
-    return summarize_by_category(rows)
-
-
-@app.get("/analytics/anomalies", response_model=list[AnomalyOut])
-def anomalies(db: Session = Depends(get_db)):
-    rows = [
+def transaction_rows(db: Session):
+    return [
         {
             "id": transaction.id,
             "merchant_name": transaction.merchant_name,
@@ -84,4 +87,33 @@ def anomalies(db: Session = Depends(get_db)):
         }
         for transaction in db.query(Transaction).all()
     ]
-    return detect_anomalies(rows)
+
+
+@app.get("/analytics/category-summary", response_model=list[CategorySummary])
+def category_summary(db: Session = Depends(get_db)):
+    return summarize_by_category(transaction_rows(db))
+
+
+@app.get("/analytics/merchant-summary", response_model=list[MerchantSummary])
+def merchant_summary(db: Session = Depends(get_db)):
+    return summarize_by_merchant(transaction_rows(db))
+
+
+@app.get("/analytics/monthly-summary", response_model=list[MonthlySummary])
+def monthly_summary(db: Session = Depends(get_db)):
+    return summarize_by_month(transaction_rows(db))
+
+
+@app.get("/analytics/dashboard", response_model=DashboardSummary)
+def dashboard_summary(db: Session = Depends(get_db)):
+    return build_dashboard_summary(transaction_rows(db))
+
+
+@app.get("/analytics/anomalies", response_model=list[AnomalyOut])
+def anomalies(db: Session = Depends(get_db)):
+    return detect_anomalies(transaction_rows(db))
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard():
+    return render_dashboard()

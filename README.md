@@ -23,9 +23,11 @@ and product analytics.
 
 - Transaction ingestion endpoint
 - Seed endpoint for mock Plaid-style transactions
-- Category-level monthly spending summary
+- Category, merchant, and monthly spending summaries
 - Simple anomaly detection for unusually large transactions
-- Clean API structure for future dashboard integration
+- Dashboard summary endpoint for frontend-ready metrics
+- Lightweight local dashboard at `/dashboard`
+- Isolated test suite for analytics and API behavior
 
 ## Resume Bullets
 
@@ -38,8 +40,10 @@ and product analytics.
 
 ## Local Run
 
+Recommended Python version: `3.12`.
+
 ```bash
-python3 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
@@ -49,12 +53,42 @@ Open:
 
 - API docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
+- Dashboard: http://localhost:8000/dashboard
+
+Seed demo data:
+
+```bash
+curl -X POST http://localhost:8000/seed
+```
+
+Run tests:
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+## API Endpoints
+
+- `POST /transactions` creates a transaction
+- `POST /seed` loads Plaid Sandbox-inspired mock transactions
+- `GET /transactions` lists transactions
+- `GET /analytics/category-summary` groups spend by category
+- `GET /analytics/merchant-summary` groups spend by merchant
+- `GET /analytics/monthly-summary` groups spend by month
+- `GET /analytics/anomalies` flags unusually large transactions
+- `GET /analytics/dashboard` returns dashboard-ready metrics
+
+## Environment Notes
+
+The data stack is pinned for Python 3.12 because pandas and NumPy wheels are
+more reliable there than on bleeding-edge Python versions. If your default
+`python3` is newer, create the virtual environment with a Python 3.12 binary.
 
 ## Project Roadmap
 
 - Replace mock data with Plaid Sandbox integration
 - Add PostgreSQL Docker Compose setup
-- Add React dashboard
 - Add user authentication
 - Add recurring subscription detection
-- Add tests for categorization and anomaly detection
+- Add React dashboard
