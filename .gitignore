@@ -5,3 +5,11 @@ __pycache__/
 venv/
 .DS_Store
 finance.db
+.env
+.env.local
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/

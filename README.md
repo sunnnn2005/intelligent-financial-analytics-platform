@@ -4,6 +4,17 @@ A personal finance analytics backend that ingests transaction data, cleans and
 categorizes transactions, and exposes API endpoints for dashboard-ready spending
 insights.
 
+## Highlights
+
+- FastAPI backend for transaction ingestion, mock Plaid-style sync, and spending
+  analytics
+- SQLAlchemy data model that runs locally with SQLite and is PostgreSQL-ready
+  through Docker Compose
+- pandas and NumPy analytics for category, merchant, monthly, and anomaly
+  summaries
+- Lightweight dashboard endpoint for demo-ready insights
+- Test suite covering analytics functions and API behavior
+
 ## Why This Project
 
 This project is useful for software engineering, data analyst, and data science
@@ -80,6 +91,9 @@ python -m pytest
 - `GET /analytics/anomalies` flags unusually large transactions
 - `GET /analytics/dashboard` returns dashboard-ready metrics
 
+See [`docs/api.md`](docs/api.md) for endpoint descriptions and sample request
+payloads.
+
 ## Environment Notes
 
 The data stack is pinned for Python 3.12 because pandas and NumPy wheels are
@@ -95,6 +109,18 @@ curl -X POST http://localhost:8000/plaid/sync/mock
 
 The Docker Compose setup uses a local Postgres container and does not require
 paid Plaid credentials.
+
+## Architecture
+
+See [`docs/architecture.md`](docs/architecture.md) for the data flow, analytics
+layer, and design tradeoffs.
+
+## Interview Talking Points
+
+- How transaction records are normalized before analytics
+- Why API validation and database modeling matter for financial data
+- How pandas groupby operations support dashboard metrics
+- How anomaly detection can start simple and improve with more user history
 
 ## Project Roadmap
 
